@@ -37,6 +37,20 @@ public interface IEntityController<in TEntity>
     where TEntity : IKubernetesObject<V1ObjectMeta>
 {
     /// <summary>
+    /// Called when watch starts, and gives all Listed entities up till the start-time.
+    /// </summary>
+    /// <param name="entities">All present entities at start of the controller.</param>
+    /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+    /// <returns>A task that completes when the reconciliation is done.</returns>
+    async Task InitAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken)
+    {
+        foreach (var entity in entities)
+        {
+            await ReconcileAsync(entity, cancellationToken);
+        }
+    }
+
+    /// <summary>
     /// Called for `added` and `modified` events from the watcher.
     /// </summary>
     /// <param name="entity">The entity that fired the reconcile event.</param>

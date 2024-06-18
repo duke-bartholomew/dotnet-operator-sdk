@@ -8,8 +8,11 @@ public class BackoffPolicy(CancellationToken stoppingToken, Func<int, TimeSpan> 
     private int _retries = 0;
 
     /// <summary>
-    /// Default exponential backoff algorithm
+    /// Default exponential backoff algorithm.
     /// </summary>
+    /// <param name="maxExp">Maximum exponent for the function calculating the exponential delay time.</param>
+    /// <param name="jitterMillis">Amount of random jitter to introduce on top of the calculated exponential delay.</param>
+    /// <returns>Exponential backof calculation function to use in the <see cref="BackoffPolicy"/>.</returns>
     public static Func<int, TimeSpan> ExponentialWithJitter(int maxExp = 5, int jitterMillis = 1000)
         => retries => TimeSpan.FromSeconds(Math.Pow(2, Math.Clamp(retries, 0, maxExp)))
             .Add(TimeSpan.FromMilliseconds(new Random().Next(0, jitterMillis)));

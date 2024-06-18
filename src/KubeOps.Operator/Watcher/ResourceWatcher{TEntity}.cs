@@ -133,10 +133,8 @@ internal class ResourceWatcher<TEntity>(
                     @namespace: settings.Namespace,
                     cancellationToken: stoppingToken);
 
-                foreach (var entity in entities)
-                {
-                    await OnEventAsync(WatchEventType.Added, entity, stoppingToken);
-                }
+                _entityCache.Clear();
+                await OnInitAsync(entities, stoppingToken);
 
                 onError.Clear();
                 await client.WatchSafeAsync<TEntity>(
@@ -157,6 +155,16 @@ internal class ResourceWatcher<TEntity>(
                 await onError.WaitOnException(cause);
             }
         }
+    }
+
+    private async Task OnInitAsync(IList<TEntity> entities, CancellationToken cancellationToken)
+    {
+        foreach (var entity in entities)
+        {
+            _entityCache.TryAdd(entity.Uid(), entity.Generation() ?? 0);
+        }
+
+        await ReconcileInitAsync(entities, cancellationToken);
     }
 
     private async Task OnEventAsync(WatchEventType type, TEntity? entity, CancellationToken cancellationToken)
@@ -246,6 +254,20 @@ internal class ResourceWatcher<TEntity>(
             entity.Kind,
             entity.Name(),
             identifier);
+    }
+
+    private async Task ReconcileInitAsync(IList<TEntity> entities, CancellationToken cancellationToken)
+    {
+        // Re-queue should be requested in the controllers' Init method.
+        // Invalidate any existing queues.
+        foreach (TEntity entity in entities)
+        {
+            requeue.Remove(entity);
+        }
+
+        await using var scope = provider.CreateAsyncScope();
+        var controller = scope.ServiceProvider.GetRequiredService<IEntityController<TEntity>>();
+        await controller.InitAsync(entities, cancellationToken);
     }
 
     private async Task ReconcileModificationAsync(TEntity entity, CancellationToken cancellationToken)

@@ -1,5 +1,3 @@
-using System.Text.RegularExpressions;
-
 namespace KubeOps.KubernetesClient;
 
 /// <summary>
@@ -10,6 +8,9 @@ public static class ExceptionExtensions
     /// <summary>
     /// Walk through all collected Exceptions (base exception and all inner exceptions) LINQ style.
     /// </summary>
+    /// <param name="self"><see cref="Exception"/>.</param>
+    /// <returns>IEnumerable for all inner exceptions.</returns>
+    /// <exception cref="ArgumentNullException">self is null.</exception>
     public static IEnumerable<Exception> All(this Exception self)
     {
         if (self == null)
@@ -17,6 +18,11 @@ public static class ExceptionExtensions
             throw new ArgumentNullException(nameof(self));
         }
 
+        return self.TakeAll();
+    }
+
+    private static IEnumerable<Exception> TakeAll(this Exception self)
+    {
         var cause = self;
         do
         {

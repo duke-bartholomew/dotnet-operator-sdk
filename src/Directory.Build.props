@@ -17,6 +17,7 @@
         <PackageIcon>icon.png</PackageIcon>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
+        <Version>1.0.0-clouTrix</Version>
     </PropertyGroup>
 
     <PropertyGroup>

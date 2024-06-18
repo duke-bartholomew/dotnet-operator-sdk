@@ -21,7 +21,7 @@ public class KubernetesClient : IKubernetesClient
     private const string DefaultNamespace = "default";
 
     private static readonly ConcurrentDictionary<Type, EntityMetadata> MetadataCache = new();
-    private static List<int?> ResourceFailureCodes = ((int?[])[(int)HttpStatusCode.GatewayTimeout, (int)HttpStatusCode.Gone]).ToList();
+    private static List<int?> resourceFailureCodes = ((int?[])[(int)HttpStatusCode.GatewayTimeout, (int)HttpStatusCode.Gone]).ToList();
 
     private readonly KubernetesClientConfiguration _clientConfig;
     private readonly IKubernetes _client;
@@ -32,14 +32,18 @@ public class KubernetesClient : IKubernetesClient
     /// The client will use the default configuration.
     /// </summary>
     public KubernetesClient()
-        : this(KubernetesClientConfiguration.BuildDefaultConfig()) { }
+        : this(KubernetesClientConfiguration.BuildDefaultConfig())
+    {
+    }
 
     /// <summary>
     /// Create a new Kubernetes client for the given entity with a custom client configuration.
     /// </summary>
     /// <param name="clientConfig">The config for the underlying Kubernetes client.</param>
     public KubernetesClient(KubernetesClientConfiguration clientConfig)
-        : this(clientConfig, new Kubernetes(clientConfig)) { }
+        : this(clientConfig, new Kubernetes(clientConfig))
+    {
+    }
 
     /// <summary>
     /// Create a new Kubernetes client for the given entity with a custom client configuration and client.
@@ -373,7 +377,7 @@ public class KubernetesClient : IKubernetesClient
             {
                 // OK, end the watch
             }
-            catch (KubernetesException cause) when (ResourceFailureCodes.Contains(cause.Status.Code))
+            catch (KubernetesException cause) when (resourceFailureCodes.Contains(cause.Status.Code))
             {
                 onTransientError?.Invoke(cause);
                 break;
